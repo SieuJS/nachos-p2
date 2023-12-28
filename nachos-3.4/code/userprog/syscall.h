@@ -36,6 +36,9 @@
 #define SC_ReadString	15
 #define SC_PrintString	16
 #define SC_Seek			17
+#define SC_CreateSemaphore	18
+#define SC_Wait			19
+#define SC_Signal		20
 
 #ifndef IN_ASM
 
@@ -142,6 +145,13 @@ void PrintChar(char character);
 void ReadString(char* buffer, int length);
 
 void PrintString(char* buffer);
+
+// Ham cho sempahore
+int CreateSemaphore(char* name, int semval);
+
+int Wait(char* name);
+
+int Signal(char* name);
 
 #endif /* IN_ASM */
 

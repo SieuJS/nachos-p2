@@ -175,6 +175,15 @@ void ExceptionHandler(ExceptionType which)
 		case SC_Exit :
 			ExitHandler();
 			break;
+        case SC_CreateSemaphore :
+            CreateSemaphoreHandler();
+            break;
+        case SC_Wait :
+            WaitHandler();
+            break;
+        case SC_Signal :
+            SignalHandler();
+            break;
 		default:
 			IncreasePC(); //and do nothing
 			break;
@@ -767,6 +776,106 @@ void ExitHandler(){
 			currentThread->Finish();
 			IncreasePC();
 			return; 
+}
+
+void CreateSemaphoreHandler() {
+    // int CreateSemaphore(char* name, int semval).
+	int virtAddr = machine->ReadRegister(4);
+	int semval = machine->ReadRegister(5);
+
+	char *name = User2System(virtAddr, MaxFileLength + 1);
+	if(name == NULL)
+	{
+		DEBUG('a', "\n Not enough memory in System");
+		printf("\n Not enough memory in System");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;
+	}
+			
+	int res = semTab->Create(name, semval);
+
+	if(res == -1)
+	{
+		DEBUG('a', "\n Khong the khoi tao semaphore");
+		printf("\n Khong the khoi tao semaphore");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;				
+	}
+			
+	delete[] name;
+	machine->WriteRegister(2, res);
+	IncreasePC();
+	return;
+}
+
+void WaitHandler() {
+    // int Wait(char* name)
+	int virtAddr = machine->ReadRegister(4);
+
+	char *name = User2System(virtAddr, MaxFileLength + 1);
+	if(name == NULL)
+	{
+		DEBUG('a', "\n Not enough memory in System");
+		printf("\n Not enough memory in System");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;
+	}
+			
+	int res = semTab->Wait(name);
+
+	if(res == -1)
+	{
+		DEBUG('a', "\n Khong ton tai ten semaphore nay");
+		printf("\n Khong ton tai ten semaphore nay");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;				
+	}
+			
+	delete[] name;
+	machine->WriteRegister(2, res);
+	IncreasePC();
+	return;
+}
+
+void SignalHandler() {
+// int Signal(char* name)
+	int virtAddr = machine->ReadRegister(4);
+
+	char *name = User2System(virtAddr, MaxFileLength + 1);
+	if(name == NULL)
+	{
+		DEBUG('a', "\n Not enough memory in System");
+		printf("\n Not enough memory in System");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;
+	}
+			
+	int res = semTab->Signal(name);
+
+	if(res == -1)
+	{
+		DEBUG('a', "\n Khong ton tai ten semaphore nay");
+		printf("\n Khong ton tai ten semaphore nay");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;				
+	}
+			
+	delete[] name;
+	machine->WriteRegister(2, res);
+	IncreasePC();
+	return;
 }
 
 char *User2System(int virtAddr, int limit)
